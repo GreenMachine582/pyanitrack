@@ -1,0 +1,8 @@
+cff-version: "0.0.1"
+date-released: 2024-09
+message: "If you use this software, please cite it using these metadata."
+title: "PyAniTrack: Retrieves information from anime, manga websites via API and stores data in a persistent database"
+url: "https://github.com/GreenMachine582/pyanitrack"
+authors:
+  - family-names: Johnson
+    given-names: Matthew
