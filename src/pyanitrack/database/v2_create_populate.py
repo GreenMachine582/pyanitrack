@@ -4,7 +4,8 @@ _logger = logging.getLogger(__name__)
 
 def populate(env):
     """ Populate the database with initial data. """
-    genres = ['Action', 'Comedy', 'Drama']
+    genres = ['Adventure', 'Action', 'Comedy', 'Drama', 'Ecchi', 'Fantasy', 'Harem', 'Horror', 'Isekai', 'Magic',
+              'Mecha', 'Romance', 'Sci-Fi', 'Shonen', 'Slice of Life', 'Supernatural']
     for genre in genres:
         env.cur.execute("INSERT INTO genre (name) VALUES (%s) ON CONFLICT (name) DO NOTHING;", (genre,))
 
