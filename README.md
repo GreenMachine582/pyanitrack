@@ -1,4 +1,7 @@
 # PyAniTrack
+[![Build Status](https://github.com/GreenMachine582/pyanitrack/actions/workflows/project_tests.yml/badge.svg?branch=main)](https://github.com/GreenMachine582/pyanitrack/actions/workflows/project_tests.yml)
+![Python version](https://img.shields.io/badge/python-3.7-blue.svg)
+[![GitHub commits](https://img.shields.io/github/commits-since/GreenMachine582/pyanitrack/latest.svg)](https://github.com/GreenMachine582/pyanitrack/commits/main)
 
 ## Table of Contents
 - [Introduction](#introduction)

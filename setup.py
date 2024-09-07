@@ -9,7 +9,7 @@ version_contents = {}
 with open(os.path.join(dir_name, "src", "pyanitrack.conf", "version.py"), encoding="utf-8") as f:
     exec(f.read(), version_contents)
 
-with open(os.path.join(dir_name, "db_structure.md"), "r", encoding="utf-8") as file:
+with open(os.path.join(dir_name, "README.md"), "r", encoding="utf-8") as file:
     long_description = file.read()
 
 
