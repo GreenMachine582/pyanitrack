@@ -4,6 +4,8 @@ import logging
 import os
 
 from . import utils, version
+from .tools import database
+from .tools.database import DatabaseError, DatabaseNotFoundError, SchemaFileNotFoundError, SchemaApplicationError
 
 _logger = logging.getLogger(__name__)
 

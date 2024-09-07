@@ -1,18 +1,20 @@
 
 import logging
-import os
+from os import path as os_path
 
-from .exceptions import PyAniTrackException
 from .. import utils
 from ..utils.config import Config
 from ..utils.logger import LoggerHandler
 
 _logger = logging.getLogger(__name__)
 
+UTILS_DIR = os_path.dirname(os_path.abspath(__file__))
+SRC_DIR = os_path.dirname(UTILS_DIR)  # Get source directory
+
 
 class Env:
 
-    PROJECT_DIR = utils.splitPath(os.path.dirname(os.path.abspath(__file__)), direction='rl')[0]
+    PROJECT_DIR = SRC_DIR
 
     def __init__(self, config_path: str, *args, **kwargs):
         # Referenced objects
@@ -25,6 +27,10 @@ class Env:
         self.project_name_text: str = ""
         self.instance: str = ""
         self.version: str = ""
+
+        # Database
+        self.conn = None
+        self.cur = None
 
         if logs_dir := kwargs.get("logs_dir"):
             kwargs.pop("logs_dir")
