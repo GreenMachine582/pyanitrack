@@ -32,7 +32,8 @@ class Env:
         self.conn = None
         self.cur = None
 
-        if logs_dir := kwargs.get("logs_dir"):
+        logs_dir = kwargs.get("logs_dir")
+        if logs_dir:
             kwargs.pop("logs_dir")
 
         self.__call__(*args, **kwargs)
