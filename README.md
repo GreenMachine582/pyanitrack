@@ -17,7 +17,8 @@
   - [5. Social Sharing and Community Features](#5-social-sharing-and-community-features)
   - [6. Cloud Sync and Backup](#6-cloud-sync-and-backup)
   - [7. Mobile Application](#7-mobile-application)
-- [Conclusion](#conclusion)
+- [Testing](#testing)
+- [License](#license)
 
 ---
 
@@ -95,3 +96,17 @@ usability.
 ### 8. Graphing History, Genres, and Activity
 Introduce data visualisation features that allow users to gain insights into their anime and manga consumption patterns 
 through interactive graphs and charts.
+
+
+## Testing
+PyAniTrack includes a comprehensive suite of unit tests to ensure the reliability and stability of its features. Tests cover various aspects of the core functionality.
+
+### Running Tests
+To run the tests, navigate to the project root directory and execute the following command:
+
+```bash
+python -m unittest discover -s tests
+```
+
+## License
+PyAniTrack is licensed under the MIT License, see [LICENSE](LICENSE) for more information.
