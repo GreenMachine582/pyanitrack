@@ -24,6 +24,13 @@ BEGIN
             name VARCHAR(50) UNIQUE NOT NULL
         );
 
+        -- Stream Services Table
+        CREATE TABLE stream_service (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(50) UNIQUE NOT NULL,
+            domain_url VARCHAR(255)
+        );
+
         -- Anime Table
         CREATE TABLE anime (
             id SERIAL PRIMARY KEY,
@@ -31,7 +38,6 @@ BEGIN
             display_name VARCHAR(100) NOT NULL,
             summary TEXT,
             url VARCHAR(255),
-            service VARCHAR(50),
             thumbnail_url VARCHAR(255)
         );
 
@@ -106,6 +112,13 @@ BEGIN
             anime_id INTEGER REFERENCES anime(id) ON DELETE CASCADE,
             genre_id INTEGER REFERENCES genre(id) ON DELETE CASCADE,
             PRIMARY KEY (anime_id, genre_id)
+        );
+
+        -- Anime-Stream Service Join Table
+        CREATE TABLE anime_stream_service (
+            anime_id INTEGER REFERENCES anime(id) ON DELETE CASCADE,
+            stream_service_id INTEGER REFERENCES stream_service(id) ON DELETE CASCADE,
+            PRIMARY KEY (anime_id, stream_service_id)
         );
 
         -- Insert Initial Version Record
