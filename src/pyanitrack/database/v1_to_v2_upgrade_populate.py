@@ -4,6 +4,17 @@ _logger = logging.getLogger(__name__)
 
 def populate(env):
     """ Data transformation from v1 to v2. """
+    _logger.info("Populating the database with initial data.")
+
+    genres = ['Adventure', 'Action', 'Comedy', 'Drama', 'Ecchi', 'Fantasy', 'Harem', 'Horror', 'Isekai', 'Magic',
+              'Mecha', 'Romance', 'Shonen', 'Slice of Life']
+    for genre in genres:
+        env.cur.execute("INSERT INTO genre (name) VALUES (%s) ON CONFLICT (name) DO NOTHING;", (genre,))
+
+    anime_statuses = ['Watching', 'Completed', 'On Hold', 'Dropped', 'Queue']
+    for status in anime_statuses:
+        env.cur.execute("INSERT INTO anime_status (name) VALUES (%s) ON CONFLICT (name) DO NOTHING;", (status,))
+
     _logger.info("Starting data transformation for anime table...")
 
     # Migrate data from anime_old to anime
