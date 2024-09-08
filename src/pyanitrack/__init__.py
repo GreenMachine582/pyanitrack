@@ -19,9 +19,10 @@ def loadEnv(config_path: str = "", **kwargs) -> utils.Env:
     """Load the env and config for the project."""
     global env
     kwargs = {
-                 "project_name": version.PROJECT_NAME,
-                 "project_name_text": version.PROJECT_NAME_TEXT,
-                 "version": version.VERSION
-             } | kwargs
+        "project_name": version.PROJECT_NAME,
+        "project_name_text": version.PROJECT_NAME_TEXT,
+        "version": version.VERSION,
+        **kwargs,
+    }
     env = utils.Env(config_path, **kwargs)
     return env

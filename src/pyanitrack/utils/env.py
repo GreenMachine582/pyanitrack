@@ -41,7 +41,7 @@ class Env:
         if self.project_dir:  # Ensure given project dir exists
             utils.path.checkPath(self.project_dir, errors='raise')
 
-        kwargs = {'env': self} | kwargs
+        kwargs = {'env': self, **kwargs}
         self.config = Config(config_path, **kwargs)
 
         # Create logger

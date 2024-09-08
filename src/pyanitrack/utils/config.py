@@ -51,10 +51,10 @@ class Config:
 
         # Load and set config attributes
         # Load base config first
-        config_ = self.loadConfig(self.PROJECT_CONFIG_PATH)
+        self.loadConfig(self.PROJECT_CONFIG_PATH)
 
         if self.config_path:  # Load desired config and overwrite base config
-            config_ |= self.loadConfig(self.config_path, sections)
+            self.loadConfig(self.config_path, sections)
 
         # Add environment paths
         self.addEnvPaths()
