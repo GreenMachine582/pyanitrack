@@ -142,10 +142,13 @@ class Config:
         self._config = {}
         self._sections = []
 
-    def setConfig(self, config: dict):
+    def setConfig(self, config: dict[str: dict]):
         """Add section attributes to Config with dict values."""
         for key, value in config.items():
-            self._config[key] = self._config.get(key, {}) | value
+            if key not in self._config:
+                self._config[key] = value
+                continue
+            self._config[key].update(value)
 
     def saveConfig(self, config_dir: str = "", filename: str = ""):
         """Save the current configuration attributes back to the config file."""
