@@ -13,13 +13,13 @@ BEGIN
         -- Anime Table
         CREATE TABLE anime (
             id SERIAL PRIMARY KEY,
-            name VARCHAR(100) UNIQUE NOT NULL,
+            name VARCHAR(150) NOT NULL,
             season INTEGER NOT NULL,
             episode INTEGER NOT NULL,
             times_watched INTEGER NOT NULL,
             service VARCHAR(50),
             watch_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            genres VARCHAR(100) UNIQUE NOT NULL
+            genres VARCHAR(100) NOT NULL
         );
 
         -- Insert Initial Version Record
