@@ -76,51 +76,58 @@ def getLatestVersion(database_dir: str):
 
 def applySchemaVersion(database_dir: str, cursor, from_version: int, to_version: int):
     """Apply the schema for the specified version, handling both create and upgrade scenarios."""
+    method = "upgrade" if from_version else "create"
+    version_text = f"v{from_version} to v{to_version}" if from_version else f"v{to_version}"
+
     if not from_version:  # Creation case
         schema_file = os_path.join(database_dir, f"v{to_version}_create_schema.sql")
     else:  # Upgrade case
         schema_file = os_path.join(database_dir, f"v{from_version}_to_v{to_version}_upgrade_schema.sql")
 
-    _logger.info(f"Applying schema from version {from_version or 'initial'} to {to_version}...")
+    _logger.debug(f"Applying {method} schema for {version_text}...")
 
     try:
         with open(schema_file, 'r') as file:
             cursor.execute(file.read())
-        _logger.info(f"Schema upgrade to version {to_version} applied successfully.")
+        _logger.debug(f"{method.capitalize()} schema for {version_text} applied successfully.")
     except FileNotFoundError:
-        _logger.error(f"Schema file {schema_file} not found.")
+        _logger.error(f"{method.capitalize()}  schema file {schema_file} not found.")
         raise SchemaFileNotFoundError(f"Schema file {schema_file} not found.")
     except (Exception, psycopg2.DatabaseError) as error:
-        _logger.error(f"Error applying schema version {to_version}: {error}")
-        raise SchemaApplicationError(f"Error applying schema version {to_version}: {error}")
+        _logger.error(f"Error applying {method} schema for {version_text}: {error}")
+        raise SchemaApplicationError(f"Error applying {method} schema for {version_text}: {error}")
 
 
 def runDataPopulationScript(database_dir: str, from_version: int, to_version: int, env):
     """Look for and run a Python script to populate or upgrade the database."""
+    method = "upgrade" if from_version else "create"
+    version_text = f"v{from_version} to v{to_version}" if from_version else f"v{to_version}"
+
     if not from_version:  # Creation case
         script_file = os_path.join(database_dir, f"v{to_version}_create_populate.py")
     else:  # Upgrade case
         script_file = os_path.join(database_dir, f"v{from_version}_to_v{to_version}_upgrade_population.py")
 
+    if not os_path.exists(script_file):
+        _logger.debug(f"No {method} population script found for {version_text}.")
+
+    _logger.debug(f"Starting transaction for {method} population script for {version_text}...")
+
     try:
-        _logger.info(f"Starting transaction for data population script from version {from_version or 'initial'} to {to_version}...")
         env.cur.execute("BEGIN")  # Start a transaction
 
-        if os_path.exists(script_file):
-            _logger.info(f"Running data population script: {script_file}")
-            script_namespace = {}
-            with open(script_file, 'r') as file:
-                exec(file.read(), script_namespace)
-            if 'populate' in script_namespace:
-                script_namespace['populate'](env)
-                _logger.info("Data population script executed successfully.")
-            else:
-                _logger.warning(f"No 'populate' function found in {script_file}.")
+        _logger.debug(f"Running data population script: {script_file}")
+        script_namespace = {}
+        with open(script_file, 'r') as file:
+            exec(file.read(), script_namespace)
+        if 'populate' in script_namespace:
+            script_namespace['populate'](env)
+            _logger.debug("Data population script executed successfully.")
         else:
-            _logger.info(f"No data population script found for version {to_version}.")
+            _logger.warning(f"No 'populate' function found in {script_file}.")
 
         env.cur.execute("COMMIT")  # Commit the transaction if everything goes well
-        _logger.info("Transaction committed successfully.")
+        _logger.debug("Transaction committed successfully.")
 
     except Exception as e:
         _logger.error(f"Error during data population: {e}")
@@ -132,7 +139,7 @@ def createDatabase(env, version: int = None):
     """ Create the database from the newest or specified version. """
     params = env.config["database"]
     db_name = params.get("dbname")
-    _logger.info(f"Creating database {db_name} from version {version}...")
+    _logger.info(f"Creating database {db_name} from v{version}...")
 
     database_dir = os_path.join(env.PROJECT_DIR, "database", "")
 
@@ -147,10 +154,10 @@ def createDatabase(env, version: int = None):
         cur.execute(sql.SQL("SELECT 1 FROM pg_database WHERE datname = %s"), [db_name])
         exists = cur.fetchone()
         if exists:
-            _logger.info(f"Database {db_name} already exists. Proceeding with schema creation.")
+            _logger.debug(f"Database {db_name} already exists. Proceeding with schema creation.")
         else:
             cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(db_name)))
-            _logger.info(f"Database {db_name} created successfully.")
+            _logger.debug(f"Database {db_name} created successfully.")
 
         cur.close()
         conn.close()
@@ -166,9 +173,9 @@ def createDatabase(env, version: int = None):
         applySchemaVersion(database_dir, cur, 0, version)
 
         # Run data population script if available
-        runDataPopulationScript(database_dir, 0, version, env)
+        script_applied = runDataPopulationScript(database_dir, 0, version, env)
 
-        _logger.info(f"Database {db_name} created and schema version {version} applied.")
+        _logger.info(f"Database {db_name} created{', schema and population script' if script_applied else ' and schema'} v{version} applied.")
 
     except DatabaseError as db_error:
         _logger.error(f"Database creation failed: {db_error}")
@@ -179,7 +186,7 @@ def createDatabase(env, version: int = None):
     finally:
         if conn is not None:
             conn.close()
-            _logger.info(f"Database connection closed.")
+            _logger.debug(f"Database connection closed.")
 
 
 def upgradeDatabase(env, from_version: int, to_version: int):
@@ -197,7 +204,7 @@ def upgradeDatabase(env, from_version: int, to_version: int):
 
         # Apply schema updates from the current version to the target version
         for version in range(from_version, to_version):
-            _logger.info(f"Applying schema update for version {version}...")
+            _logger.debug(f"Applying schema update for version {version}...")
             # Apply schema update
             applySchemaVersion(database_dir, cur, version, version + 1)
 
@@ -210,7 +217,7 @@ def upgradeDatabase(env, from_version: int, to_version: int):
         _logger.info(f"Database upgraded to schema version {to_version}.")
 
         cur.execute("COMMIT")  # Commit the transaction if everything goes well
-        _logger.info("Transaction committed successfully.")
+        _logger.debug("Transaction committed successfully.")
 
     except Exception as e:
         _logger.error(f"Error during database upgrade: {e}")
@@ -220,5 +227,6 @@ def upgradeDatabase(env, from_version: int, to_version: int):
     finally:
         if conn is not None:
             conn.close()
-            _logger.info("Database connection closed.")
+            _logger.debug("Database connection closed.")
+
 
