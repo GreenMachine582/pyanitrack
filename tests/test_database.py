@@ -49,24 +49,25 @@ class TestDatabaseFunctions(unittest.TestCase):
     @patch('builtins.open', new_callable=mock_open, read_data="def populate(env): env.cur.execute('INSERT INTO table')")
     def test_run_data_population_script_create(self, mock_file, mock_exists):
         """Test runDataPopulationScript for creating population."""
-        runDataPopulationScript(os_path.abspath('/mock/project/database'), 0, 1, self.env)
+        result = runDataPopulationScript(os_path.abspath('/mock/project/database'), 0, 1, self.env)
         self.env.cur.execute.assert_has_calls([call("BEGIN"), call("INSERT INTO table"), call("COMMIT")])
         mock_file.assert_called_with(os_path.abspath('/mock/project/database/v1_create_populate.py'), 'r')
+        self.assertTrue(result)
 
     @patch('os.path.exists', return_value=True)
     @patch('builtins.open', new_callable=mock_open, read_data="def populate(env): env.cur.execute('UPDATE table')")
     def test_run_data_population_script_upgrade(self, mock_file, mock_exists):
         """Test runDataPopulationScript for upgrading population."""
-        runDataPopulationScript(os_path.abspath('/mock/project/database'), 1, 2, self.env)
+        result = runDataPopulationScript(os_path.abspath('/mock/project/database'), 1, 2, self.env)
         self.env.cur.execute.assert_has_calls([call("BEGIN"), call("UPDATE table"), call("COMMIT")])
         mock_file.assert_called_with(os_path.abspath('/mock/project/database/v1_to_v2_upgrade_population.py'), 'r')
+        self.assertTrue(result)
 
     @patch('os.path.exists', return_value=False)
     def test_run_data_population_script_no_file(self, mock_exists):
         """Test runDataPopulationScript where no population script exists."""
-        runDataPopulationScript(os_path.abspath('/mock/project/database'), 1, 2, self.env)
-        self.env.cur.execute.assert_has_calls([call("BEGIN"), call("COMMIT")])
-        self.assertEqual(self.env.cur.execute.call_count, 2)
+        result = runDataPopulationScript(os_path.abspath('/mock/project/database'), 1, 2, self.env)
+        self.assertFalse(result)
 
     @patch('src.pyanitrack.tools.database._connect')
     @patch('src.pyanitrack.tools.database.getLatestVersion', return_value=2)

@@ -98,7 +98,7 @@ def applySchemaVersion(database_dir: str, cursor, from_version: int, to_version:
         raise SchemaApplicationError(f"Error applying {method} schema for {version_text}: {error}")
 
 
-def runDataPopulationScript(database_dir: str, from_version: int, to_version: int, env):
+def runDataPopulationScript(database_dir: str, from_version: int, to_version: int, env) -> bool:
     """Look for and run a Python script to populate or upgrade the database."""
     method = "upgrade" if from_version else "create"
     version_text = f"v{from_version} to v{to_version}" if from_version else f"v{to_version}"
@@ -110,6 +110,7 @@ def runDataPopulationScript(database_dir: str, from_version: int, to_version: in
 
     if not os_path.exists(script_file):
         _logger.debug(f"No {method} population script found for {version_text}.")
+        return False
 
     _logger.debug(f"Starting transaction for {method} population script for {version_text}...")
 
@@ -128,6 +129,7 @@ def runDataPopulationScript(database_dir: str, from_version: int, to_version: in
 
         env.cur.execute("COMMIT")  # Commit the transaction if everything goes well
         _logger.debug("Transaction committed successfully.")
+        return True
 
     except Exception as e:
         _logger.error(f"Error during data population: {e}")
