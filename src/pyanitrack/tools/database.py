@@ -232,3 +232,25 @@ def upgradeDatabase(env, from_version: int, to_version: int):
             _logger.debug("Database connection closed.")
 
 
+def getSchemaVersion(cur):
+    """Fetch the current database schema version."""
+    try:
+        # Query the latest version from the schema_version table
+        cur.execute("""
+            SELECT version
+            FROM schema_version
+            ORDER BY applied_at DESC
+            LIMIT 1;
+        """)
+
+        # Fetch the result
+        version_record = cur.fetchone()
+
+        if version_record is None:
+            # If no version is found, the database is un-versioned
+            _logger.warning("No version record found. The database might not be initialised.")
+            return None
+        return version_record[0]
+    except Exception as e:
+        _logger.error(f"Error while fetching the database version: {e}")
+        raise DatabaseError("Failed to get database version.")
