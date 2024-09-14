@@ -41,9 +41,10 @@ def _connect(env=None, autocommit: bool = True, **params):
     return conn, cur
 
 
-def connect(env):
+def connect(env, **kwargs):
     """ Connect to the project database server. """
-    params = env.config["database"]
+    params = env.config["database"].copy()
+    params.update(kwargs)
     _logger.info(f"Connecting to the {env.project_name_text} database...")
 
     try:
