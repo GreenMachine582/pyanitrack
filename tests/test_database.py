@@ -61,7 +61,7 @@ class TestDatabaseFunctions(unittest.TestCase):
         """Test runDataPopulationScript for upgrading population."""
         result = runDataPopulationScript(os_path.abspath('/mock/project/database'), 1, 2, self.env)
         self.env.cur.execute.assert_has_calls([call("BEGIN"), call("UPDATE table"), call("COMMIT")])
-        mock_file.assert_called_with(os_path.abspath('/mock/project/database/v1_to_v2_upgrade_population.py'), 'r')
+        mock_file.assert_called_with(os_path.abspath('/mock/project/database/v1_to_v2_upgrade_populate.py'), 'r')
         self.assertTrue(result)
 
     @patch('os.path.exists', return_value=False)

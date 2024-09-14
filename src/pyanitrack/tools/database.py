@@ -107,7 +107,7 @@ def runDataPopulationScript(database_dir: str, from_version: int, to_version: in
     if not from_version:  # Creation case
         script_file = os_path.join(database_dir, f"v{to_version}_create_populate.py")
     else:  # Upgrade case
-        script_file = os_path.join(database_dir, f"v{from_version}_to_v{to_version}_upgrade_population.py")
+        script_file = os_path.join(database_dir, f"v{from_version}_to_v{to_version}_upgrade_populate.py")
 
     if not os_path.exists(script_file):
         _logger.debug(f"No {method} population script found for {version_text}.")
