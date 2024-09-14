@@ -18,14 +18,15 @@ parser.add_argument("--logs_dir", default="", help="directory to desired logs (d
 
 
 def loadDataFromExcel(env, excel_file_path: str, target_version: int):
-    """Load data from an Excel file and insert it into the database."""
+    """Load data from an Excel file and insert it into the database with transaction rollback on error."""
+    conn, cur = None, None
     try:
         # Ensure the database connection is available
         try:
-            conn, cur = pyanitrack.database.connect(env)
+            conn, cur = pyanitrack.database.connect(env, autocommit=False)
         except pyanitrack.DatabaseNotFoundError:
             pyanitrack.database.createDatabase(env, target_version)
-            conn, cur = pyanitrack.database.connect(env)
+            conn, cur = pyanitrack.database.connect(env, autocommit=False)
 
         # Check if the current database schema version matches the target version
         db_version = pyanitrack.database.getSchemaVersion(cur)
@@ -50,14 +51,10 @@ def loadDataFromExcel(env, excel_file_path: str, target_version: int):
             genres = row.iloc[6]
 
             # Insert the row into the anime table
-            try:
-                cur.execute("""
-                        INSERT INTO anime (name, season, episode, times_watched, service, watch_date, genres)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """, (name, season, episode, times_watched, streaming_service, watch_date, genres))
-            except Exception as error:
-                _logger.error(f"An error occurred: {error}")
-                raise Exception(f"An error occurred: {error}")
+            cur.execute("""
+                INSERT INTO anime (name, season, episode, times_watched, service, watch_date, genres)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (name, season, episode, times_watched, streaming_service, watch_date, genres))
 
         # Commit the transaction after all rows are inserted
         conn.commit()
@@ -65,6 +62,15 @@ def loadDataFromExcel(env, excel_file_path: str, target_version: int):
 
     except Exception as e:
         _logger.error(f"An error occurred while loading data from Excel: {e}")
+        if conn:
+            _logger.debug("Rolling back the transaction due to error.")
+            conn.rollback()  # Rollback the transaction if any error occurs
+        raise
+    finally:
+        if conn:
+            conn.close()  # Ensure the connection is closed
+            _logger.debug("Database connection closed.")
+
 
 
 def main():
