@@ -138,27 +138,27 @@ def runDataPopulationScript(database_dir: str, from_version: int, to_version: in
 
 
 def createDatabase(env, version: int = None):
-    """ Create the database from the newest or specified version. """
+    """Create the database from the newest or specified version with proper locking."""
     params = env.config["database"]
     db_name = params.get("dbname")
     _logger.info(f"Creating database {db_name} from v{version}...")
 
     database_dir = os_path.join(env.PROJECT_DIR, "database", "")
-
     conn = None
+
     try:
-        # Connect to the default database to create the project database
+        # Connect to the default PostgreSQL database to create the project database
         default_params = params.copy()
-        default_params['dbname'] = 'postgres'  # Connect to the default postgres db to execute create db
+        default_params['dbname'] = 'postgres'  # Use the default 'postgres' db to create the new database
         conn, cur = _connect(env, **default_params)
 
         # Check if the database already exists
-        cur.execute(sql.SQL("SELECT 1 FROM pg_database WHERE datname = %s"), [db_name])
+        cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", [db_name])
         exists = cur.fetchone()
         if exists:
             _logger.debug(f"Database {db_name} already exists. Proceeding with schema creation.")
         else:
-            cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(db_name)))
+            cur.execute(f"CREATE DATABASE {db_name}")
             _logger.debug(f"Database {db_name} created successfully.")
 
         cur.close()
@@ -166,7 +166,7 @@ def createDatabase(env, version: int = None):
 
         # Reconnect to the newly created database to apply the schema
         params['dbname'] = db_name
-        conn, cur = _connect(env, **params)
+        conn, cur = _connect(env, autocommit=False, **params)
 
         if version is None:
             version = getLatestAvailableVersion(database_dir)
@@ -174,25 +174,38 @@ def createDatabase(env, version: int = None):
         # Apply the schema for the specified version
         applySchemaVersion(database_dir, cur, 0, version)
 
+        # Start a transaction and acquire an exclusive lock on the schema_version table
+        cur.execute("BEGIN")
+        cur.execute("LOCK TABLE schema_version IN ACCESS EXCLUSIVE MODE")
+        _logger.debug("Acquired exclusive lock on schema_version table.")
+
         # Run data population script if available
         script_applied = runDataPopulationScript(database_dir, 0, version, env)
 
+        # Commit the transaction
+        conn.commit()
         _logger.info(f"Database {db_name} created{', schema and population script' if script_applied else ' and schema'} v{version} applied.")
+        _logger.debug("Transaction committed successfully.")
 
     except DatabaseError as db_error:
         _logger.error(f"Database creation failed: {db_error}")
+        if conn:
+            conn.rollback()  # Rollback if an error occurs
+            _logger.debug("Transaction rolled back due to error.")
         raise
     except (Exception, psycopg2.DatabaseError) as error:
         _logger.error(f"Error: {error}")
+        if conn:
+            conn.rollback()  # Rollback on generic error
         raise DatabaseError(f"An error occurred: {error}")
     finally:
         if conn is not None:
-            conn.close()
+            conn.close()  # Close the connection
             _logger.debug(f"Database connection closed.")
 
 
 def upgradeDatabase(env, from_version: int, to_version: int):
-    """ Upgrade the database schema from a specific version to a target version. """
+    """Upgrade the database schema from a specific version to a target version with proper locking."""
     params = env.config["database"]
     db_name = params.get("dbname")
     _logger.info(f"Upgrading database {db_name} from version {from_version} to {to_version}...")
@@ -202,7 +215,12 @@ def upgradeDatabase(env, from_version: int, to_version: int):
 
     try:
         # Connect to the database to apply upgrades
-        conn, cur = _connect(env, **params)
+        conn, cur = _connect(env, autocommit=False, **params)
+
+        # Start a transaction and acquire an exclusive lock on the schema_version table
+        cur.execute("BEGIN")
+        cur.execute("LOCK TABLE schema_version IN ACCESS EXCLUSIVE MODE")
+        _logger.debug("Acquired exclusive lock on schema_version table.")
 
         # Apply schema updates from the current version to the target version
         for version in range(from_version, to_version):
@@ -214,21 +232,27 @@ def upgradeDatabase(env, from_version: int, to_version: int):
             runDataPopulationScript(database_dir, version, version + 1, env)
 
         # Update schema_version table with the new version
-        cur.execute("INSERT INTO schema_version (version, description) VALUES (%s, %s) ON CONFLICT (version) DO NOTHING",
-                    (to_version, f'Upgraded to schema version {to_version}'))
-        _logger.info(f"Database upgraded to schema version {to_version}.")
+        cur.execute("""
+            INSERT INTO schema_version (version, description) 
+            VALUES (%s, %s) 
+            ON CONFLICT (version) DO NOTHING
+            """, (to_version, f'Upgraded to schema version {to_version}')
+        )
 
-        cur.execute("COMMIT")  # Commit the transaction if everything goes well
+        # Commit the transaction
+        conn.commit()
+        _logger.info(f"Database upgraded to schema version {to_version}.")
         _logger.debug("Transaction committed successfully.")
 
     except Exception as e:
         _logger.error(f"Error during database upgrade: {e}")
         if conn and cur:
-            cur.execute("ROLLBACK")  # Rollback the entire transaction
+            conn.rollback()  # Rollback the transaction on error
+            _logger.debug("Transaction rolled back due to error.")
         raise DatabaseError("An error occurred during database upgrade. Transaction rolled back.")
     finally:
         if conn is not None:
-            conn.close()
+            conn.close()  # Ensure the connection is closed
             _logger.debug("Database connection closed.")
 
 
