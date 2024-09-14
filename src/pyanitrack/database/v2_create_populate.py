@@ -2,11 +2,13 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-def populate(env):
-    """ Populate the database with initial data. """
+
+def populateLookupTables(env):
+    """ Populate lookup tables with initial data. """
     # Genres Table
-    genres = ['Adventure', 'Action', 'Comedy', 'Drama', 'Ecchi', 'Fantasy', 'Harem', 'Horror', 'Isekai', 'Magic',
-              'Mecha', 'Romance', 'Sci-Fi', 'Shonen', 'Slice of Life', 'Supernatural']
+    genres = ['Action', 'Adventure', 'Comedy', 'Drama', 'Ecchi', 'Fan Service', 'Fantasy', 'Harem', 'Historical',
+              'Horror', 'Isekai', 'Magic', 'Martial Arts', 'Mecha', 'Mystery', 'Romance', 'School', 'Sci-Fi', 'Shonen',
+              'Slice of Life', 'Supernatural']
     for genre in genres:
         env.cur.execute("INSERT INTO genre (name) VALUES (%s) ON CONFLICT (name) DO NOTHING;", (genre,))
 
@@ -26,9 +28,10 @@ def populate(env):
             stream_service
         )
 
-    # Anime Statuses Table
-    anime_statuses = ['Watching', 'Completed', 'On Hold', 'Dropped', 'Queue']
-    for status in anime_statuses:
-        env.cur.execute("INSERT INTO anime_status (name) VALUES (%s) ON CONFLICT (name) DO NOTHING;", (status,))
+
+def populate(env):
+    """ Populate the database with initial data. """
+    _logger.info("Populating the database lookup tables with initial data...")
+    populateLookupTables(env)
 
     _logger.info("Initial data population completed.")
