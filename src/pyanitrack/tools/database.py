@@ -58,7 +58,7 @@ def connect(env):
         raise DatabaseError(f"An error occurred: {error}")
 
 
-def getLatestVersion(database_dir: str):
+def getLatestAvailableVersion(database_dir: str):
     """ Get the latest version of the schema. """
     files = os.listdir(database_dir)
 
@@ -169,7 +169,7 @@ def createDatabase(env, version: int = None):
         conn, cur = _connect(env, **params)
 
         if version is None:
-            version = getLatestVersion(database_dir)
+            version = getLatestAvailableVersion(database_dir)
 
         # Apply the schema for the specified version
         applySchemaVersion(database_dir, cur, 0, version)

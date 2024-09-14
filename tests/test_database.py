@@ -3,8 +3,8 @@ from os import path as os_path
 from unittest.mock import patch, MagicMock, mock_open, call
 
 from src.pyanitrack import DatabaseError
-from src.pyanitrack.tools.database import (createDatabase, upgradeDatabase, getLatestVersion, applySchemaVersion,
-                                           runDataPopulationScript, _connect, connect)
+from src.pyanitrack.tools.database import (createDatabase, upgradeDatabase, getLatestAvailableVersion,
+                                           applySchemaVersion, runDataPopulationScript, _connect, connect)
 
 class TestDatabaseFunctions(unittest.TestCase):
 
@@ -26,9 +26,9 @@ class TestDatabaseFunctions(unittest.TestCase):
 
     @patch('os.listdir', return_value=['v1_create_schema.sql', 'v2_create_schema.sql'])
     def test_get_latest_version(self, mock_listdir):
-        """Test getLatestVersion correctly identifies the latest version."""
+        """Test getLatestAvailableVersion correctly identifies the latest version."""
         database_dir = '/mock/project/database'
-        latest_version = getLatestVersion(database_dir)
+        latest_version = getLatestAvailableVersion(database_dir)
         self.assertEqual(latest_version, 2)
 
     @patch('builtins.open', new_callable=mock_open, read_data="SQL COMMAND")
@@ -70,7 +70,7 @@ class TestDatabaseFunctions(unittest.TestCase):
         self.assertFalse(result)
 
     @patch('src.pyanitrack.tools.database._connect')
-    @patch('src.pyanitrack.tools.database.getLatestVersion', return_value=2)
+    @patch('src.pyanitrack.tools.database.getLatestAvailableVersion', return_value=2)
     @patch('src.pyanitrack.tools.database.applySchemaVersion')
     @patch('src.pyanitrack.tools.database.runDataPopulationScript')
     def test_create_database(self, mock_run_data, mock_apply_schema, mock_latest_version, mock_connect):
