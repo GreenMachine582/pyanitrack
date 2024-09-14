@@ -4,7 +4,8 @@ from unittest.mock import patch, MagicMock, mock_open, call
 
 from src.pyanitrack import DatabaseError
 from src.pyanitrack.tools.database import (createDatabase, upgradeDatabase, getLatestAvailableVersion,
-                                           applySchemaVersion, runDataPopulationScript, _connect, connect)
+                                           applySchemaVersion, runDataPopulationScript, _connect, connect,
+                                           getSchemaVersion)
 
 class TestDatabaseFunctions(unittest.TestCase):
 
@@ -95,6 +96,60 @@ class TestDatabaseFunctions(unittest.TestCase):
         mock_connect.assert_called()
         mock_apply_schema.assert_called_with(os_path.join(os_path.abspath('/mock/project/database/'), ''), self.env.cur, 1, 2)
         mock_run_data.assert_called_with(os_path.join(os_path.abspath('/mock/project/database/'), ''), 1, 2, self.env)
+
+
+class TestDatabaseGetSchemaVersion(unittest.TestCase):
+
+    def setUp(self):
+        """Set up a mock cursor for database interactions."""
+        self.cur = MagicMock()
+
+    def test_get_schema_version_success(self):
+        """Test getSchemaVersion when the version exists."""
+        # Mock the cursor's fetchone method to return a valid version
+        self.cur.fetchone.return_value = (1,)
+
+        # Call the function and assert the correct version is returned
+        result = getSchemaVersion(self.cur)
+        self.assertEqual(result, 1)
+        self.cur.execute.assert_called_once_with("""
+            SELECT version
+            FROM schema_version
+            ORDER BY applied_at DESC
+            LIMIT 1;
+        """)
+
+    def test_get_schema_version_no_version(self):
+        """Test getSchemaVersion when no version is found in the table."""
+        # Mock the cursor's fetchone method to return None (no version found)
+        self.cur.fetchone.return_value = None
+
+        # Call the function and assert that None is returned
+        result = getSchemaVersion(self.cur)
+        self.assertIsNone(result)
+        self.cur.execute.assert_called_once_with("""
+            SELECT version
+            FROM schema_version
+            ORDER BY applied_at DESC
+            LIMIT 1;
+        """)
+
+    def test_get_schema_version_error(self):
+        """Test getSchemaVersion when an error occurs during query execution."""
+        # Mock the cursor's execute method to raise an exception
+        self.cur.execute.side_effect = Exception("Database error")
+
+        # Ensure the function raises a DatabaseError
+        with self.assertRaises(DatabaseError):
+            getSchemaVersion(self.cur)
+
+        # Assert that the execute method was called once before the error
+        self.cur.execute.assert_called_once_with("""
+            SELECT version
+            FROM schema_version
+            ORDER BY applied_at DESC
+            LIMIT 1;
+        """)
 
 
 if __name__ == '__main__':
