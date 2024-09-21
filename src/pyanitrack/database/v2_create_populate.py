@@ -6,9 +6,11 @@ _logger = logging.getLogger(__name__)
 def populateLookupTables(env):
     """ Populate lookup tables with initial data. """
     # Genres Table
-    genres = ['Action', 'Adventure', 'Comedy', 'Drama', 'Ecchi', 'Fan Service', 'Fantasy', 'Harem', 'Historical',
-              'Horror', 'Isekai', 'Magic', 'Martial Arts', 'Mecha', 'Mystery', 'Romance', 'School', 'Sci-Fi', 'Shonen',
-              'Slice of Life', 'Supernatural']
+    genres = ['Action', 'Adventure', 'Comedy', 'Drama', 'Ecchi', 'Fan Service', 'Fantasy', 'Gore', 'Harem',
+              'Historical', 'Horror', 'Isekai', 'Magic', 'Martial Arts', 'Mecha', 'Methodology', 'Mystery',
+              'Psychological', 'Reincarnation', 'Romance', 'School', 'Sci-Fi', 'Shonen', 'Slice of Life',
+              'Supernatural', 'Super Power', 'Suspense', 'Survival']
+
     for genre in genres:
         env.cur.execute("INSERT INTO genre (name) VALUES (%s) ON CONFLICT (name) DO NOTHING;", (genre,))
 
@@ -18,8 +20,7 @@ def populateLookupTables(env):
         ('Crunchyroll', 'https://www.crunchyroll.com'),
         ('Funimation', 'https://www.funimation.com'),
         ('HiDive', 'https://www.hidive.com'),
-        ('Netflix', 'https://www.netflix.com'),
-        ('Other', None)
+        ('Netflix', 'https://www.netflix.com')
     ]
 
     for stream_service in stream_services:
