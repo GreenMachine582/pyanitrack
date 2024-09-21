@@ -37,30 +37,30 @@ BEGIN
         CREATE TABLE season (
             id SERIAL PRIMARY KEY,
             number INTEGER NOT NULL,
-            anime INTEGER REFERENCES anime(id) ON DELETE CASCADE,
+            anime_id INTEGER REFERENCES anime(id) ON DELETE CASCADE,
             episode_count INTEGER NOT NULL,
             myanimelist_url VARCHAR(255),
             mal_id INTEGER NOT NULL,
             thumbnail_url VARCHAR(255),
             ep_duration INTEGER NOT NULL,
             summary TEXT,
-            UNIQUE (anime, number)
+            UNIQUE (anime_id, number)
         );
 
         -- Episodes Table
         CREATE TABLE episode (
             id SERIAL PRIMARY KEY,
-            season INTEGER REFERENCES season(id) ON DELETE CASCADE,
+            season_id INTEGER REFERENCES season(id) ON DELETE CASCADE,
             number INTEGER NOT NULL,
-            anime INTEGER REFERENCES anime(id) ON DELETE CASCADE,
-            UNIQUE (season, number)
+            anime_id INTEGER REFERENCES anime(id) ON DELETE CASCADE,
+            UNIQUE (season_id, number)
         );
 
         -- Watch History Table
         CREATE TABLE watch_history (
             id SERIAL PRIMARY KEY,
-            anime INTEGER REFERENCES anime(id) ON DELETE CASCADE,
-            season INTEGER REFERENCES season(id),
+            anime_id INTEGER REFERENCES anime(id) ON DELETE CASCADE,
+            season_id INTEGER REFERENCES season(id),
             date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
             eps_watched INTEGER NOT NULL,
             completion_percentage FLOAT NOT NULL

@@ -37,24 +37,24 @@ BEGIN
         CREATE TABLE season (
             id SERIAL PRIMARY KEY,
             number INTEGER NOT NULL,
-            anime INTEGER REFERENCES anime(id) ON DELETE CASCADE,
+            anime_id INTEGER REFERENCES anime(id) ON DELETE CASCADE,
             episode_count INTEGER NOT NULL,
             myanimelist_url VARCHAR(255),
             mal_id INTEGER NOT NULL,
             thumbnail_url VARCHAR(255),
             ep_duration INTEGER NOT NULL,
             summary TEXT,
-            UNIQUE (anime, number)
+            UNIQUE (anime_id, number)
         );
 
         -- Episodes Table
         CREATE TABLE episode (
             id SERIAL PRIMARY KEY,
-            season INTEGER REFERENCES season(id) ON DELETE CASCADE,
+            season_id INTEGER REFERENCES season(id) ON DELETE CASCADE,
             number INTEGER NOT NULL,
-            anime INTEGER REFERENCES anime(id) ON DELETE CASCADE,
+            anime_id INTEGER REFERENCES anime(id) ON DELETE CASCADE,
             title VARCHAR(150) NOT NULL,
-            UNIQUE (season, number)
+            UNIQUE (season_id, number)
         );
 
         -- Users Table
@@ -69,8 +69,8 @@ BEGIN
         CREATE TABLE watch_history (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-            anime INTEGER REFERENCES anime(id) ON DELETE CASCADE,
-            season INTEGER REFERENCES season(id),
+            anime_id INTEGER REFERENCES anime(id) ON DELETE CASCADE,
+            season_id INTEGER REFERENCES season(id),
             date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
             eps_watched INTEGER NOT NULL,
             completion_percentage FLOAT NOT NULL,
@@ -87,7 +87,7 @@ BEGIN
         CREATE TABLE user_anime_status (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-            anime INTEGER REFERENCES anime(id) ON DELETE CASCADE,
+            anime_id INTEGER REFERENCES anime(id) ON DELETE CASCADE,
             watch_status INTEGER REFERENCES content_status(id),
             last_updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
         );
@@ -96,7 +96,7 @@ BEGIN
         CREATE TABLE review_anime (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-            anime INTEGER REFERENCES anime(id) ON DELETE CASCADE,
+            anime_id INTEGER REFERENCES anime(id) ON DELETE CASCADE,
             review_text TEXT NOT NULL,
             date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
         );
@@ -105,7 +105,7 @@ BEGIN
         CREATE TABLE review_episode (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-            episode INTEGER REFERENCES episode(id) ON DELETE CASCADE,
+            episode_id INTEGER REFERENCES episode(id) ON DELETE CASCADE,
             review_text TEXT NOT NULL,
             date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
             score INTEGER CHECK (score >= 1 AND score <= 10)
