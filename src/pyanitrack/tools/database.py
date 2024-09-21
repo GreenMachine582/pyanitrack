@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import traceback
 from os import path as os_path
 
 import psycopg2
@@ -121,10 +122,23 @@ def runDataPopulationScript(database_dir: str, from_version: int, to_version: in
         _logger.debug(f"Running data population script: {script_file}")
         script_namespace = {}
         with open(script_file, 'r') as file:
-            exec(file.read(), script_namespace)
+            try:
+                exec(file.read(), script_namespace)
+            except ModuleNotFoundError as e:
+                _logger.error(f"Module import error in {script_file}: {e}")
+                raise DataPopulationError(f"Missing module: {e}")
+            except Exception as e:
+                _logger.error(f"Error executing the script {script_file}: {e}")
+                raise
+
         if 'populate' in script_namespace:
-            script_namespace['populate'](env)
-            _logger.debug("Data population script executed successfully.")
+            try:
+                script_namespace['populate'](env)
+                _logger.debug("Data population script executed successfully.")
+            except Exception as e:
+                _logger.error(f"Error while executing 'populate' function in {script_file}: {e}")
+                _logger.debug(traceback.format_exc())
+                raise DataPopulationError(f"Error in 'populate' function: {e}")
         else:
             _logger.warning(f"No 'populate' function found in {script_file}.")
 
