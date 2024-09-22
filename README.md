@@ -1,7 +1,10 @@
 # PyAniTrack
 [![Build Status](https://github.com/GreenMachine582/pyanitrack/actions/workflows/project_tests.yml/badge.svg?branch=main)](https://github.com/GreenMachine582/pyanitrack/actions/workflows/project_tests.yml)
-![Python version](https://img.shields.io/badge/python-3.7-blue.svg)
-[![GitHub commits](https://img.shields.io/github/commits-since/GreenMachine582/pyanitrack/latest.svg)](https://github.com/GreenMachine582/pyanitrack/commits/main)
+![Python version](https://img.shields.io/badge/python-3.7%20--%203.12-blue.svg)
+![Codecov](https://codecov.io/gh/GreenMachine582/pyanitrack/branch/main/graph/badge.svg)
+![GitHub release](https://img.shields.io/github/v/release/GreenMachine582/pyanitrack?include_prereleases)
+![Activity](https://img.shields.io/github/commit-activity/m/badges/shields)
+[![Commits](https://img.shields.io/github/commits-since/GreenMachine582/pyanitrack/v0.1.0-alpha.svg)](https://github.com/GreenMachine582/pyanitrack/compare/v0.1.0-alpha...dev?include_prereleases)
 
 ## Table of Contents
 - [Introduction](#introduction)
