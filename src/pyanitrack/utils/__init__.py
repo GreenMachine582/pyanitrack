@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from . import file
+from . import file, text_manipulation
 from .path import *
 from .utils import *
 from .config import Config, checkConfigPath
