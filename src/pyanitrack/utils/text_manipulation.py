@@ -77,8 +77,8 @@ def sanitiseText(raw_text: str, replace_: set = None, remove_: set = None, sep: 
     return stripText(fmt_text, replace_with=sep, default=set())  # Remove excess seps
 
 
-def sanitiseLabel(raw_label: str) -> str:
-    """Sanitise label with a set of operations, simplify text for easier comparisons."""
-    if not raw_label:
-        return raw_label or ''
-    return sanitiseText(raw_label, set(' -|;'), set('\'`~!@#$%^&*()=+[{]}:,<.>/?\\'))
+def sanitiseTextCommon(raw_text: str) -> str:
+    """Sanitise text with a set of common operations, simplify text for easier comparisons."""
+    if not raw_text:
+        return raw_text or ''
+    return sanitiseText(raw_text, set(' -|;'), set('\'`~!@#$%^&*()=+[{]}:,<.>/?\\'))
