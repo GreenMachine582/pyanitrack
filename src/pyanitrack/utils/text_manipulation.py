@@ -7,12 +7,24 @@ _logger = logging.getLogger(__name__)
 
 
 def camelToSnake(value: str) -> str:
-    """Convert CamelCase to snake_case."""
+    """
+    Convert CamelCase to snake_case.
+
+    Examples:
+        >>> camelToSnake('CamelCase')
+        'camel_case'
+    """
     return re.sub(r'(?<!^)(?=[A-Z])', '_', str(value)).lower()
 
 
 def snakeToCamel(value: str) -> str:
-    """Convert snake_case to CamelCase."""
+    """
+    Convert snake_case to CamelCase.
+
+    Examples:
+        >>> snakeToCamel('snake_case')
+        'snakeCase'
+    """
     values = str(value).split('_')
     return values[0] + ''.join(ele.title() for ele in values[1:])
 
@@ -21,6 +33,10 @@ def stripText(text: str, replace_with: str = '_', lower: bool = True, strip: boo
               include: set = None, exclude: set = None) -> str:
     """
     Strip text by replacing substrings and remove excess values.
+
+    Examples:
+        >>> stripText('Hello & World!')
+        'hello_world'
 
     :param text: Input string to be stripped, should be a str
     :param replace_with: Value to replace the substrings, should be a str
@@ -63,6 +79,10 @@ def sanitiseText(raw_text: str, replace_: set = None, remove_: set = None, sep: 
     """
     Sanitise text with a set of operations, simplify text for easier comparisons.
 
+    Examples:
+        >>> sanitiseText('Hello World!', replace_={'e'}, remove_={'!'})
+        'h_llo world'
+
     :param raw_text: Input string to be sanitised, should be a str
     :param replace_: Substrings to be replaced by sep, should be a set[str]
     :param remove_: Substrings to be removed, should be a set[str]
@@ -78,7 +98,13 @@ def sanitiseText(raw_text: str, replace_: set = None, remove_: set = None, sep: 
 
 
 def sanitiseTextCommon(raw_text: str) -> str:
-    """Sanitise text with a set of common operations, simplify text for easier comparisons."""
+    """
+    Sanitise text with a set of common operations, simplify text for easier comparisons.
+
+    Examples:
+        >>> sanitiseTextCommon("hello world\'`~!@#$|%^&*-()=+[;{]}:,<.>/?\")
+        'hello_world'
+    """
     if not raw_text:
         return raw_text or ''
     return sanitiseText(raw_text, set(' -|;'), set('\'`~!@#$%^&*()=+[{]}:,<.>/?\\'))
