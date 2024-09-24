@@ -48,11 +48,13 @@ def stripText(text: str, replace_with: str = '_', lower: bool = True, strip: boo
     for char in sorted(substrings_to_replace, key=len, reverse=True):
         if char != replace_with:
             text = text.replace(char, replace_with)
+        if not text:
+            break
 
     # Remove excess replace with values
-    if replace_with:
-        text = re.sub(f"{replace_with}+", replace_with, text)
-    if strip:
+    if replace_with and text:
+        text = re.sub(f"{re.escape(replace_with)}+", replace_with, text)
+    if strip and text:
         return text.strip(replace_with or None)
     return text
 
