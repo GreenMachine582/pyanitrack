@@ -273,11 +273,9 @@ def addSeason(env, anime_id: int, display_name: str, season_result, season_numbe
 
 def migrateAnimeData(env):
     """Migrate data from anime_old to anime table with transformations."""
-
-    # Fetch records from anime_old one at a time
-    env.cur.execute("SELECT * FROM anime_old")
-
     while True:
+        # Fetch records from anime_old one at a time
+        env.cur.execute("SELECT * FROM anime_old")
         anime = env.cur.fetchone()
         if anime is None:
             break  # Exit the loop if no more records
