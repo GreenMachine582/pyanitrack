@@ -13,14 +13,7 @@ def stripText(text: str, replace_with: str = '_', lower: bool = True, strip: boo
     """
     Strip text by replacing substrings and remove excess values.
 
-    :param text: Input string to be stripped, should be a str
-    :param replace_with: Value to replace the substrings, should be a str
-    :param lower: Whether to convert text to lowercase, should be a bool
-    :param strip: Whether to strip excess values from the text, should be a bool
-    :param default: Default array of substrings to replace, should be a set[str]
-    :param include: Substrings to include in replace array, should be a set[str]
-    :param exclude: Substrings to excluded from replace array, should be a set[str]
-    :return: stripped_text - str
+    Refer to `utils.text_manipulation.stripText` for details.
     """
     if default is None:
         default = set(" `~!@#$%^&*()-_=+|[{]};:',<.>/?\\\n\t" + '"')
@@ -39,11 +32,13 @@ def stripText(text: str, replace_with: str = '_', lower: bool = True, strip: boo
     for char in sorted(substrings_to_replace, key=len, reverse=True):
         if char != replace_with:
             text = text.replace(char, replace_with)
+        if not text:
+            break
 
     # Remove excess replace with values
-    if replace_with:
-        text = re.sub(f"{replace_with}+", replace_with, text)
-    if strip:
+    if replace_with and text:
+        text = re.sub(f"{re.escape(replace_with)}+", replace_with, text)
+    if strip and text:
         return text.strip(replace_with or None)
     return text
 
@@ -52,11 +47,7 @@ def sanitiseText(raw_text: str, replace_: set = None, remove_: set = None, sep: 
     """
     Sanitise text with a set of operations, simplify text for easier comparisons.
 
-    :param raw_text: Input string to be sanitised, should be a str
-    :param replace_: Substrings to be replaced by sep, should be a set[str]
-    :param remove_: Substrings to be removed, should be a set[str]
-    :param sep: Value to replace the substrings and act as known seperator, should be a str
-    :return:
+    Refer to `utils.text_manipulation.sanitiseText` for details.
     """
     fmt_text = str(raw_text)
     if replace_:
@@ -66,11 +57,15 @@ def sanitiseText(raw_text: str, replace_: set = None, remove_: set = None, sep: 
     return stripText(fmt_text, replace_with=sep, default=set())  # Remove excess seps
 
 
-def sanitiseLabel(raw_label: str) -> str:
-    """Sanitise label with a set of operations, simplify text for easier comparisons."""
-    if not raw_label:
-        return raw_label or ''
-    return sanitiseText(raw_label, set(' -|;'), set('\'`~!@#$%^&*()=+[{]}:,<.>/?\\'))
+def sanitiseTextCommon(raw_text: str) -> str:
+    """
+    Sanitise text with a set of common operations, simplify text for easier comparisons.
+
+    Refer to `utils.text_manipulation.sanitiseTextCommon` for details.
+    """
+    if not raw_text:
+        return raw_text or ''
+    return sanitiseText(raw_text, set(' -|;'), set('\'`~!@#$%^&*()=+[{]}:,<.>/?\\'))
 
 
 def populateLookupTables(env):
@@ -290,7 +285,7 @@ def migrateAnimeData(env):
         anime_id, name, season, episode, times_watched, service, watch_date, genres = anime
 
         display_name = name
-        name = sanitiseLabel(name)
+        name = sanitiseTextCommon(name)
 
         new_anime_id = addAnime(env, name, display_name)
         _logger.debug(f"Updating records related to anime {new_anime_id}-'{name}'")
