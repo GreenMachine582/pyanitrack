@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 import difflib
 import logging
@@ -6,6 +7,16 @@ import re
 import requests
 
 _logger = logging.getLogger(__name__)
+
+
+def _removeExcessValue(text: str, value: str, strip: bool = True) -> str:
+    """Remove excess value from text."""
+    # Remove excess replace with values
+    if value and text:
+        text = re.sub(f"{value}+", value, text)
+    if strip and text:
+        text = text.strip(value or None)
+    return text
 
 
 def stripText(text: str, replace_with: str = '_', lower: bool = True, strip: bool = True, default: set = None,
@@ -36,11 +47,7 @@ def stripText(text: str, replace_with: str = '_', lower: bool = True, strip: boo
             break
 
     # Remove excess replace with values
-    if replace_with and text:
-        text = re.sub(f"{re.escape(replace_with)}+", replace_with, text)
-    if strip and text:
-        return text.strip(replace_with or None)
-    return text
+    return _removeExcessValue(text, replace_with, strip)
 
 
 def sanitiseText(raw_text: str, replace_: set = None, remove_: set = None, sep: str = '_') -> str:
@@ -66,6 +73,15 @@ def sanitiseTextCommon(raw_text: str) -> str:
     if not raw_text:
         return raw_text or ''
     return sanitiseText(raw_text, set(' -|;'), set('\'`~!@#$%^&*()=+[{]}:,<.>/?\\'))
+
+
+def replaceWithPattern(text: str, patterns: list[str | re.Pattern], replace_with: str = '_', strip: bool = True) -> str:
+    """Replace matching substrings using patterns with replace value."""
+    for pattern in patterns:
+        text = re.sub(pattern, replace_with, text)
+
+    # Remove excess replace with values
+    return _removeExcessValue(text, replace_with, strip)
 
 
 def populateLookupTables(env):
