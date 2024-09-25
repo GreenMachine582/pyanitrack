@@ -1,6 +1,8 @@
+import re
 import unittest
+
 from src.pyanitrack.utils.text_manipulation import (camelToSnake, snakeToCamel, stripText, sanitiseText,
-                                                    sanitiseTextCommon)
+                                                    sanitiseTextCommon, patternReplaceWith)
 
 
 class TestTextManipulation(unittest.TestCase):
@@ -109,7 +111,7 @@ class TestTextManipulationStripText(unittest.TestCase):
 
 class TestTextManipulationSanitiseText(unittest.TestCase):
 
-    def test_sanitise_replace_and_remove(self):
+    def test_replace_and_remove(self):
         """Test sanitiseText with both replace_ and remove_ sets."""
         raw_text = 'Hello - World! @Example_Test'
         replace_set = {' ', '-'}
@@ -118,7 +120,7 @@ class TestTextManipulationSanitiseText(unittest.TestCase):
         result = sanitiseText(raw_text, replace_=replace_set, remove_=remove_set, sep='_')
         self.assertEqual(result, expected_output)
 
-    def test_sanitise_replace_only(self):
+    def test_replace_only(self):
         """Test sanitiseText with only replace_ set."""
         raw_text = 'Some - text to replace'
         replace_set = {' '}
@@ -126,7 +128,7 @@ class TestTextManipulationSanitiseText(unittest.TestCase):
         result = sanitiseText(raw_text, replace_=replace_set, sep='_')
         self.assertEqual(result, expected_output)
 
-    def test_sanitise_remove_only(self):
+    def test_remove_only(self):
         """Test sanitiseText with only remove_ set."""
         raw_text = 'Remove these characters: !@#'
         remove_set = {'!', '@', '#'}
@@ -134,25 +136,76 @@ class TestTextManipulationSanitiseText(unittest.TestCase):
         result = sanitiseText(raw_text, remove_=remove_set, sep=' ')
         self.assertEqual(result, expected_output)
 
-    def test_sanitise_no_replace_or_remove(self):
+    def test_no_replace_or_remove(self):
         """Test sanitiseText with no replace_ or remove_ sets."""
         raw_text = 'No_replacements_or_removals_here'
         expected_output = 'no_replacements_or_removals_here'
         result = sanitiseText(raw_text, sep='_')
         self.assertEqual(result, expected_output)
 
-    def test_sanitise_common(self):
+    def test_common(self):
         """Test sanitiseTextCommon with common operations."""
         raw_text = 'Common - Sanitisation | Test; This is #Text!'
         expected_output = 'common_sanitisation_test_this_is_text'
         result = sanitiseTextCommon(raw_text)
         self.assertEqual(result, expected_output)
 
-    def test_sanitise_common_empty_input(self):
+    def test_common_empty_input(self):
         """Test sanitiseTextCommon with empty input."""
         raw_text = ''
         expected_output = ''
         result = sanitiseTextCommon(raw_text)
+        self.assertEqual(result, expected_output)
+
+
+class TestTextManipulationPatternReplaceWith(unittest.TestCase):
+
+    def test_basic(self):
+        """Test patternReplaceWith with basic regex patterns."""
+        text = '123_hello_456_world_789'
+        patterns = [re.compile(r'\d+')]
+        expected_output = 'hello_world'
+        result = patternReplaceWith(text, patterns, replace_with='_')
+        self.assertEqual(result, expected_output)
+
+    def test_multiple_patterns(self):
+        """Test patternReplaceWith with multiple regex patterns."""
+        text = 'Remove numbers 123 and symbols #$!'
+        patterns = [r'\d+', r'[#$!]']
+        expected_output = 'Remove numbers _ and symbols '
+        result = patternReplaceWith(text, patterns, replace_with='_')
+        self.assertEqual(result, expected_output)
+
+    def test_no_patterns(self):
+        """Test patternReplaceWith with no patterns (should not change the text)."""
+        text = 'Hello world!'
+        patterns = []
+        expected_output = 'Hello world!'
+        result = patternReplaceWith(text, patterns, replace_with='_')
+        self.assertEqual(result, expected_output)
+
+    def test_no_strip(self):
+        """Test patternReplaceWith without stripping excess values."""
+        text = '123_hello_456_world_789'
+        patterns = [r'\d+']
+        expected_output = '_hello_world_'
+        result = patternReplaceWith(text, patterns, replace_with='_', strip=False)
+        self.assertEqual(result, expected_output)
+
+    def test_custom_replace_with(self):
+        """Test patternReplaceWith with a custom replace_with value."""
+        text = '123_hello_456_world_789'
+        patterns = [r'\d+']
+        expected_output = '_hello_*_world_'
+        result = patternReplaceWith(text, patterns, replace_with='*')
+        self.assertEqual(result, expected_output)
+
+    def test_empty_text(self):
+        """Test patternReplaceWith with an empty text."""
+        text = ''
+        patterns = [re.compile(r'\d+')]
+        expected_output = ''  # No change expected
+        result = patternReplaceWith(text, patterns, replace_with='_')
         self.assertEqual(result, expected_output)
 
 
