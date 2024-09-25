@@ -29,6 +29,15 @@ def snakeToCamel(value: str) -> str:
     return values[0] + ''.join(ele.title() for ele in values[1:])
 
 
+def _removeExcessValue(text: str, value: str, strip: bool = True) -> str:
+    """Remove excess value from text."""
+    if value and text:
+        text = re.sub(f"{value}+", value, text)
+    if strip and text:
+        text = text.strip(value or None)
+    return text
+
+
 def stripText(text: str, replace_with: str = '_', lower: bool = True, strip: bool = True, default: set = None,
               include: set = None, exclude: set = None) -> str:
     """
@@ -68,11 +77,7 @@ def stripText(text: str, replace_with: str = '_', lower: bool = True, strip: boo
             break
 
     # Remove excess replace with values
-    if replace_with and text:
-        text = re.sub(f"{re.escape(replace_with)}+", replace_with, text)
-    if strip and text:
-        return text.strip(replace_with or None)
-    return text
+    return _removeExcessValue(text, replace_with, strip)
 
 
 def sanitiseText(raw_text: str, replace_: set = None, remove_: set = None, sep: str = '_') -> str:
