@@ -75,7 +75,7 @@ def sanitiseTextCommon(raw_text: str) -> str:
     return sanitiseText(raw_text, set(' -|;'), set('\'`~!@#$%^&*()=+[{]}:,<.>/?\\'))
 
 
-def replaceWithPattern(text: str, patterns: list[str | re.Pattern], replace_with: str = '_', strip: bool = True) -> str:
+def patternReplaceWith(text: str, patterns: list[str | re.Pattern], replace_with: str = '_', strip: bool = True) -> str:
     """Replace matching substrings using patterns with replace value."""
     for pattern in patterns:
         text = re.sub(pattern, replace_with, text)
@@ -231,6 +231,8 @@ def filterOutUnrelated(anime_result: dict, name: str, threshold: float = 0.7) ->
         title = title_info.get("title", "")
         # Strip and sanitise the title
         clean_title = stripText(title)
+
+        clean_title = patternReplaceWith(clean_title, [r'(season|part)_[0-9]'])
 
         # Apply the built-in similarity function from difflib
         similarity = difflib.SequenceMatcher(None, name.lower(), clean_title.lower()).ratio()

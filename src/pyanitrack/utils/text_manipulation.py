@@ -32,7 +32,7 @@ def snakeToCamel(value: str) -> str:
 def _removeExcessValue(text: str, value: str, strip: bool = True) -> str:
     """Remove excess value from text."""
     if value and text:
-        text = re.sub(f"{value}+", value, text)
+        text = re.sub(f"{re.escape(value)}+", value, text)
     if strip and text:
         text = text.strip(value or None)
     return text
@@ -115,7 +115,7 @@ def sanitiseTextCommon(raw_text: str) -> str:
     return sanitiseText(raw_text, set(' -|;'), set('\'`~!@#$%^&*()=+[{]}:,<.>/?\\'))
 
 
-def replaceWithPattern(text: str, patterns: list[re.Pattern], replace_with: str = '_', strip: bool = True) -> str:
+def patternReplaceWith(text: str, patterns: list[re.Pattern], replace_with: str = '_', strip: bool = True) -> str:
     """Replace matching substrings using patterns with replace value."""
     for pattern in patterns:
         text = re.sub(pattern, replace_with, text)
