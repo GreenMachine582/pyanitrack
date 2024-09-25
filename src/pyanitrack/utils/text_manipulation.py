@@ -113,3 +113,12 @@ def sanitiseTextCommon(raw_text: str) -> str:
     if not raw_text:
         return raw_text or ''
     return sanitiseText(raw_text, set(' -|;'), set('\'`~!@#$%^&*()=+[{]}:,<.>/?\\'))
+
+
+def replaceWithPattern(text: str, patterns: list[re.Pattern], replace_with: str = '_', strip: bool = True) -> str:
+    """Replace matching substrings using patterns with replace value."""
+    for pattern in patterns:
+        text = re.sub(pattern, replace_with, text)
+
+    # Remove excess replace with values
+    return _removeExcessValue(text, replace_with, strip)
