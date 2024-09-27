@@ -45,7 +45,8 @@ class LoggerHandler:
         self.logs_dir = self._buildLogDirectory()
         self.logger = self._buildLogger()
 
-        self.cleanLogs()
+        if self.logs_dir:
+            self.cleanLogs()
 
     @property
     def config(self):
