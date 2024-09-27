@@ -54,7 +54,7 @@ class Config:
         self.loadConfig(self.PROJECT_CONFIG_PATH)
 
         if self.config_path:  # Load desired config and overwrite base config
-            self.loadConfig(self.config_path, sections)
+            self.loadConfig(sections=sections)
 
         # Add environment paths
         self.addEnvPaths()
@@ -85,9 +85,11 @@ class Config:
             return False
         return path.split(config_path)
 
-    def loadConfig(self, config_path: str, sections: str | list = '') -> dict | None:
+    def loadConfig(self, config_path: str = '', sections: str | list = '') -> dict | None:
         """Load config attributes from config file."""
         config_: dict = {}
+
+        config_path = config_path or self.config_path
 
         # Read config file
         parser = _ConfigParser()
