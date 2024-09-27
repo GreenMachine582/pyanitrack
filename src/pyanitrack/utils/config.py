@@ -158,16 +158,13 @@ class Config:
         parser = _ConfigParser()
 
         config_dir = config_dir or self.config_dir
-        filename = filename or self.filename
+        filename = filename or self.filename or self.DEFAULT_PROFILE_NAME
 
         # For each attribute in the object, if it's a dictionary, add it as a section
         for key, value in self._config.items():
             parser.add_section(key)
             for sub_key, sub_value in value.items():
                 parser.set(key, sub_key, str(sub_value))
-
-        if not filename:  # Set to default
-            filename = self.DEFAULT_PROFILE_NAME
 
         # Write the configuration back to the file
         config_path = utils.joinPath(config_dir, filename, ext=self.CONFIG_EXT)
