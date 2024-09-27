@@ -3,9 +3,6 @@ import argparse
 import logging
 from os import path as os_path
 
-import pandas as pd
-import requests
-
 from src import pyanitrack
 
 _logger = logging.getLogger(__name__)
