@@ -65,8 +65,8 @@ class Config:
     def __repr__(self) -> str:
         prefix = ""
         if self.env:
-            prefix = (self.env.project_name_text or self.env.project_name or '') + '.'
-        return f"{prefix}Config({str(self)})"
+            prefix = (self.env.project_name_text or self.env.project_name or '')
+        return f"{prefix}{'.' if prefix else ''}Config({str(self)})"
 
     def __getitem__(self, key):
         return self._config[key]
