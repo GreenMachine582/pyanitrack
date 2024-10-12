@@ -102,7 +102,7 @@ class LoggerHandler:
         # Console logger
         if self._getConfig('add_console_handler'):
             console_handler = logging.StreamHandler()
-            console_handler.setLevel(getattr(logging, self.log_level))
+            console_handler.setLevel(getattr(logging, self.log_level.upper()))
             console_handler.setFormatter(log_formatter)
             logger.addHandler(console_handler)
 
