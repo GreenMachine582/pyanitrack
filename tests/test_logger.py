@@ -61,8 +61,9 @@ class TestLoggerHandler(unittest.TestCase):
     @patch("src.pyanitrack.utils.logger.path.getctime")
     @patch("src.pyanitrack.utils.logger.path.isfile", return_value=True)
     @patch("src.pyanitrack.utils.logger.listdir", return_value=["old_logfile.log"])
+    @patch("src.pyanitrack.utils.logger._logger")
     @patch("src.pyanitrack.utils.logger.os_remove")
-    def test_cleanLogs_removes_old_logs(self, mock_remove, mock_listdir, mock_isfile, mock_getctime):
+    def test_cleanLogs_removes_old_logs(self, mock_remove, mock_logger, mock_listdir, mock_isfile, mock_getctime):
         """Test that old log files are removed."""
         mock_getctime.return_value = time.time() - (60 * 60 * 24 * 8)  # 8 days ago
         logger_handler = LoggerHandler(self.logs_dir, **self.config)
