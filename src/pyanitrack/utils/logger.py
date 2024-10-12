@@ -48,14 +48,14 @@ class LoggerHandler:
         _buildLogDirectory(self.logs_dir, self.config["add_file_handler"])
 
         self.log_level = self._getConfig("log_level").upper()
+        # Clean old logs if applicable
+        if self.logs_dir:
+            self.cleanLogs()
 
         # Validate log level
         _validateLogLevel(self.log_level)
 
         self.logger = self._buildLogger()
-
-        if self.logs_dir:
-            self.cleanLogs()
 
     @property
     def config(self):
@@ -110,29 +110,22 @@ class LoggerHandler:
 
     def cleanLogs(self):
         """Remove old log files (clean cache)"""
-        # Current time
         now = time.time()
         age_limit = self._getConfig("age_limit")
 
-        # Iterate over all files in the logs directory
         for filename in listdir(self.logs_dir):
-            # Ignore current log file as it will be opened by process
-            if filename.endswith(self.timestamp + '.' + self._getConfig('ext')):
-                continue
             file_path = path.abspath(f"{self.logs_dir}/" + filename)
-            # Ensure file is a regular config file
             if not path.isfile(file_path) or not filename.endswith(self._getConfig('ext')):
-                continue
-            # Get the file's creation time
+                continue  # Not expected log file or ext
             creation_time = path.getctime(file_path)
-            # If the file is older than the age limit, delete it
-            if now - creation_time > age_limit:
-                try:
-                    os_remove(file_path)
-                    _logger.debug(f"Deleted old log file: {filename}")
-                except PermissionError:
-                    _logger.warning(f"Failed to delete old log file due to permissions: {filename}")
-                    pass
+            if now - creation_time < age_limit:
+                continue  # Not aged enough
+            # Remove aged files
+            try:
+                os_remove(file_path)
+                _logger.debug(f"Deleted old log file: {filename}")
+            except PermissionError:
+                _logger.warning(f"Failed to delete old log file due to permissions: {filename}")
 
     def getLogger(self):
         return self.logger
