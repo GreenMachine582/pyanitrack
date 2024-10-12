@@ -4,7 +4,6 @@ import time
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from os import listdir, makedirs, path, remove as os_remove
-from typing import Any
 
 _logger = logging.getLogger(__name__)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -27,7 +26,7 @@ def _buildLogDirectory(logs_dir: str = "", add_file_handler: bool = True):
 
 
 class LoggerHandler:
-    DEFAULT_CONFIG: dict[str: Any] = {
+    DEFAULT_CONFIG = {
         "ext": "log",
         "log_level": "INFO",
         "add_console_handler": True,
@@ -42,7 +41,7 @@ class LoggerHandler:
     def __init__(self, logs_dir: str = "", **kwargs):
         self.logs_dir = logs_dir
 
-        self.config: dict[str: Any] = {**self.DEFAULT_CONFIG, **kwargs}
+        self.config = {**self.DEFAULT_CONFIG, **kwargs}
 
         # Validate config
         ext = self.config["ext"]
