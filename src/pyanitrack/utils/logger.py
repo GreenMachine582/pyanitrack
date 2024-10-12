@@ -36,7 +36,7 @@ class LoggerHandler:
         "add_time_stamp": True,
         "max_bytes": 10 * 1024 * 1024,  # 10MB
         "backup_count": 5,
-        "age_limit": 60 * 60 * 24 * 7,  # 7 days
+        "age_limit": 60 * 60 * 24 * 7  # 7 days
     }
 
     def __init__(self, logs_dir: str = "", **kwargs):
