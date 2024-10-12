@@ -16,6 +16,15 @@ def _validateLogLevel(log_level: str):
         raise ValueError(f"Invalid log level: {log_level}")
 
 
+def _buildLogDirectory(logs_dir: str = "", add_file_handler: bool = True):
+    """Build log directory if not exists."""
+    if not add_file_handler:
+        return
+    if not logs_dir:
+        raise ValueError("No log directory specified.")
+    makedirs(logs_dir, exist_ok=True)
+
+
 class LoggerHandler:
 
     EXT: str = "log"
@@ -36,13 +45,13 @@ class LoggerHandler:
         self.env = env
         self.logs_dir = logs_dir
         self.timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        _buildLogDirectory(self.logs_dir, self.config["add_file_handler"])
 
         self.log_level = self._getConfig("log_level").upper()
 
         # Validate log level
         _validateLogLevel(self.log_level)
 
-        self.logs_dir = self._buildLogDirectory()
         self.logger = self._buildLogger()
 
         if self.logs_dir:
@@ -60,16 +69,6 @@ class LoggerHandler:
             return logs_config[key]
         elif hasattr(self, key.upper()):  # Return class default
             return getattr(self, key.upper())
-
-    def _buildLogDirectory(self):
-        """Build log directory if not exists."""
-        if not self.logs_dir:
-            if not self._getConfig('add_file_handler'):
-                return ''
-            raise ValueError("No log directory specified.")
-        if not path.exists(self.logs_dir):
-            makedirs(self.logs_dir)
-        return self.logs_dir
 
     def _getLogFileName(self, level: str) -> str:
         """Constructs the filename of the log file."""
