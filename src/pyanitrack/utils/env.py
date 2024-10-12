@@ -45,7 +45,8 @@ class Env:
         self.config = Config(config_path, **kwargs)
 
         # Create logger
-        self.logger = LoggerHandler(self, logs_dir=(logs_dir or ""))
+        if not self.config.get("logs", {}).get("no_logs", False):
+            self.logger = LoggerHandler(self, logs_dir=(logs_dir or ""))
 
     def __call__(self, *args, **kwargs):
         """Update the Env with given attributes."""
