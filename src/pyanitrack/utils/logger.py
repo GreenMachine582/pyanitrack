@@ -136,3 +136,11 @@ class LoggerHandler:
 
     def getLogger(self):
         return self.logger
+
+    def close(self):
+        """Shut down the logger and close all handlers."""
+        handlers = self.logger.handlers[:]
+        for handler in handlers:
+            handler.close()
+            self.logger.removeHandler(handler)
+        _logger.debug("Logger closed successfully.")
