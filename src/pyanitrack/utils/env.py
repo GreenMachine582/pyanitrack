@@ -21,7 +21,7 @@ class Env:
         self.logger = None
 
         # Project details
-        self.project_dir: str = ""
+        self.project_dir: str = self.PROJECT_DIR
         self.project_name: str = ""
         self.project_name_text: str = ""
         self.instance: str = ""
@@ -50,17 +50,16 @@ class Env:
         for key, value in kwargs.items():
             if hasattr(self, key):
                 if key == "project_dir":
-                    value = os_path.abspath(value)
+                    # Validate given project dir, fallback to root dir
+                    if not value:
+                        value = self.PROJECT_DIR
+                    elif not os_path.exists(os_path.abspath(value)):  # Ensure given project dir exists
+                        raise FileExistsError(f"No such file or directory: '{os_path.abspath(value)}'")
+                    else:
+                        value = os_path.abspath(value)
                 setattr(self, key, value)
             else:
                 _logger.warning(f"Unexpected key, got: {key}")
-
-        if "project_dir" in kwargs:
-            # Validate given project dir, fallback to root dir
-            if not self.project_dir:
-                self.project_dir = self.PROJECT_DIR
-            elif not os_path.exists(self.project_dir):  # Ensure given project dir exists
-                raise FileExistsError(f"No such file or directory: '{self.project_dir}'")
 
     def __str__(self) -> str:
         return f"Env(project='{self.project_name_text}', version='{self.version}')"
