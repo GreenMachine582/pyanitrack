@@ -2,7 +2,6 @@
 import logging
 from os import path as os_path
 
-from .. import utils
 from ..utils.config import Config
 from ..utils.logger import LoggerHandler
 
@@ -38,9 +37,6 @@ class Env:
 
         self.__call__(*args, **kwargs)
 
-        if self.project_dir:  # Ensure given project dir exists
-            utils.path.checkPath(self.project_dir, errors='raise')
-
         kwargs = {'env': self, **kwargs}
         self.config = Config(config_path, **kwargs)
 
@@ -53,14 +49,18 @@ class Env:
         """Update the Env with given attributes."""
         for key, value in kwargs.items():
             if hasattr(self, key):
+                if key == "project_dir":
+                    value = os_path.abspath(value)
                 setattr(self, key, value)
             else:
                 _logger.warning(f"Unexpected key, got: {key}")
 
         if "project_dir" in kwargs:
             # Validate given project dir, fallback to root dir
-            if not self.project_dir or not utils.path.existPath(self.project_dir):
+            if not self.project_dir:
                 self.project_dir = self.PROJECT_DIR
+            elif not os_path.exists(self.project_dir):  # Ensure given project dir exists
+                raise FileExistsError(f"No such file or directory: '{self.project_dir}'")
 
     def __str__(self) -> str:
         return f"Env(project='{self.project_name_text}', version='{self.version}')"
