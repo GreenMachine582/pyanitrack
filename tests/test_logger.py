@@ -20,8 +20,10 @@ class TestLoggerHandler(unittest.TestCase):
             "backup_count": 3,
             "age_limit": 60 * 60 * 24 * 7,  # 7 days
             "add_time_stamp": True,
+            "add_instance": True,
             "ext": "log",
-            "project_name": "test_project"
+            "project_name": "test_project",
+            "instance": "dev"
         }
         self.logs_dir = os_path.abspath("./tmp/logs")
         self.timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -37,16 +39,23 @@ class TestLoggerHandler(unittest.TestCase):
             _validateLogLevel("invalid_level")
 
     @patch("src.pyanitrack.utils.logger.makedirs")
-    def test_build_log_directory(self, mock_makedirs):
+    def test_buildLogDirectory(self, mock_makedirs):
         """Test creating a log directory."""
         _buildLogDirectory(logs_dir=self.logs_dir, add_file_handler=True)
         mock_makedirs.assert_called_once_with(self.logs_dir, exist_ok=True)
 
     @patch("src.pyanitrack.utils.logger.makedirs")
-    def test_build_log_directory_no_file_handler(self, mock_makedirs):
+    def test_buildLogDirectory_no_file_handler(self, mock_makedirs):
         """Test without adding a file handler, the directory should not be created."""
         _buildLogDirectory(logs_dir=self.logs_dir, add_file_handler=False)
         mock_makedirs.assert_not_called()
+
+    @patch("src.pyanitrack.utils.logger.makedirs")
+    def test_buildLogDirectory_no_logs_dir(self, mock_makedirs):
+        """Test required logs dir when building directory."""
+        # Make dirs is mocked incase failure
+        with self.assertRaises(ValueError):
+            _buildLogDirectory("", add_file_handler=True)
 
     @patch("src.pyanitrack.utils.logger.listdir", return_value=["test.log"])
     def test_getLogFileName(self, mock_listdir):
@@ -58,15 +67,18 @@ class TestLoggerHandler(unittest.TestCase):
         self.assertIn(self.timestamp, log_file_name)
         self.assertTrue(log_file_name.endswith(".log"))
 
+    @patch("src.pyanitrack.utils.logger.makedirs")
     @patch("src.pyanitrack.utils.logger.path.getctime")
     @patch("src.pyanitrack.utils.logger.path.isfile", return_value=True)
     @patch("src.pyanitrack.utils.logger.listdir", return_value=["old_logfile.log"])
+    @patch("src.pyanitrack.utils.logger.RotatingFileHandler")
     @patch("src.pyanitrack.utils.logger._logger")
-    @patch("src.pyanitrack.utils.logger.os_remove")
-    def test_cleanLogs_removes_old_logs(self, mock_remove, mock_logger, mock_listdir, mock_isfile, mock_getctime):
-        """Test that old log files are removed."""
+    @patch("src.pyanitrack.utils.logger.os_remove", side_effect=PermissionError)
+    def test_cleanLogs_removes_old_logs(self, mock_remove, mock_logger, mock_file_handler, mock_listdir, mock_isfile,
+                                        mock_getctime, mock_makedirs):
         mock_getctime.return_value = time.time() - (60 * 60 * 24 * 8)  # 8 days ago
-        logger_handler = LoggerHandler(self.logs_dir, **self.config)
+        logger_handler = LoggerHandler(self.logs_dir, add_file_handler=True)
+        mock_logger.warning.assert_called_once_with("Failed to delete old log file due to permissions: old_logfile.log")
         mock_remove.assert_called_once_with(os.path.abspath(f"{self.logs_dir}/old_logfile.log"))
 
     @patch("src.pyanitrack.utils.logger.makedirs")
@@ -136,6 +148,13 @@ class TestLoggerHandler(unittest.TestCase):
 
         # Ensure the RotatingFileHandler was not added
         mock_rotating_file_handler.assert_not_called()
+
+    @patch("src.pyanitrack.utils.logger.makedirs")
+    @patch("src.pyanitrack.utils.logger.listdir", return_value=[])
+    def test_getLogger(self, mock_listdir, mock_makedirs):
+        """Test get logger method."""
+        logger = LoggerHandler(self.logs_dir)
+        self.assertEqual(logger.getLogger(), logger.logger)
 
     @patch("src.pyanitrack.utils.logger.makedirs")
     @patch("src.pyanitrack.utils.logger.listdir", return_value=["test.log"])
