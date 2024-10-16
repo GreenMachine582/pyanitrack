@@ -81,6 +81,9 @@ class TestEnv(unittest.TestCase):
         self.assertEqual(env.project_dir, os_path.abspath("path/to/project"))
         mock_exist_path.assert_called_once_with(os_path.abspath("path/to/project"))
 
+        env(project_dir="")
+        self.assertEqual(env.project_dir, env.PROJECT_DIR)
+
     @patch("src.pyanitrack.utils.env.os_path.exists", return_value=False)
     def test_invalid_project_dir_validation(self, mock_exist_path):
         """Test that the project directory validation works correctly."""
@@ -105,6 +108,14 @@ class TestEnv(unittest.TestCase):
 
         self.assertEqual(env1, env1)
         self.assertNotEqual(env1, env2)
+
+    @patch("src.pyanitrack.utils.env.Config")
+    def test_env_hash(self, mock_config):
+        """Test that the same Env object returns the same hash."""
+        env_instance1 = Env(self.config_path, project_name="test_project_1", version="1.0.0")
+        env_instance2 = Env(self.config_path, project_name="test_project_2", version="1.0.1")
+        self.assertEqual(hash(env_instance1), hash(env_instance1), "Hashes of the same object should be equal")
+        self.assertNotEqual(hash(env_instance1), hash(env_instance2), "Hashes of different objects should not be equal")
 
 
 if __name__ == "__main__":

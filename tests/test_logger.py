@@ -73,8 +73,22 @@ class TestLoggerHandler(unittest.TestCase):
     @patch("src.pyanitrack.utils.logger.listdir", return_value=["old_logfile.log"])
     @patch("src.pyanitrack.utils.logger.RotatingFileHandler")
     @patch("src.pyanitrack.utils.logger._logger")
+    @patch("src.pyanitrack.utils.logger.os_remove")
+    def test_cleanLogs_remove_old_log(self, mock_remove, mock_logger, mock_file_handler, mock_listdir, mock_isfile,
+                                        mock_getctime, mock_makedirs):
+        mock_getctime.return_value = time.time() - (60 * 60 * 24 * 8)  # 8 days ago
+        logger_handler = LoggerHandler(self.logs_dir, add_file_handler=True)
+        mock_remove.assert_called_once_with(os.path.abspath(f"{self.logs_dir}/old_logfile.log"))
+        mock_logger.debug.assert_called_once_with("Deleted old log file: old_logfile.log")
+
+    @patch("src.pyanitrack.utils.logger.makedirs")
+    @patch("src.pyanitrack.utils.logger.path.getctime")
+    @patch("src.pyanitrack.utils.logger.path.isfile", return_value=True)
+    @patch("src.pyanitrack.utils.logger.listdir", return_value=["old_logfile.log"])
+    @patch("src.pyanitrack.utils.logger.RotatingFileHandler")
+    @patch("src.pyanitrack.utils.logger._logger")
     @patch("src.pyanitrack.utils.logger.os_remove", side_effect=PermissionError)
-    def test_cleanLogs_removes_old_logs(self, mock_remove, mock_logger, mock_file_handler, mock_listdir, mock_isfile,
+    def test_cleanLogs_unable_to_remove_old_log(self, mock_remove, mock_logger, mock_file_handler, mock_listdir, mock_isfile,
                                         mock_getctime, mock_makedirs):
         mock_getctime.return_value = time.time() - (60 * 60 * 24 * 8)  # 8 days ago
         logger_handler = LoggerHandler(self.logs_dir, add_file_handler=True)
